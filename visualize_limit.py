@@ -15,7 +15,7 @@ def visualize_limit_seq(f,n):
         return 0
 
 
-#**********gets values for graph**********
+#*********values for graph**********
     e = float(input("Give some number for e : "))
     values_graph = []
     s = 0.1
@@ -53,7 +53,8 @@ def visualize_limit_seq(f,n):
         plt.legend(["function", "limit"])
         plt.show()
     zoom(zoom_scale)
-#***********Repeat zooming**********#
+    
+#***********Repeat**********#
     while True:
         zoom_scale = int(input("Try other scales or else enter 0 : "))
         if zoom_scale == 0:
@@ -66,17 +67,7 @@ def visualize_limit_ser(f,n):
     result = CT.Test(f,n)
     if result != True:
         return 0
-    
-
-
-
-
-
-
-
-
-
-
+ #incomplete   
 
 def f(n):
     return 1/n

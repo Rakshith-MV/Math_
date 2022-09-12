@@ -56,7 +56,7 @@ def visualize_limit_seq(f,n):
     
 #***********Repeat**********#
     while True:
-        zoom_scale = int(input("Try other scales or else enter 0 : "))
+        zoom_scale = int(input("Try other scales or 0 to exit "))
         if zoom_scale == 0:
             break
         else:
@@ -67,6 +67,7 @@ def visualize_limit_ser(f,n):
     result = CT.Test(f,n)
     if result != True:
         return 0
+    
  #incomplete   
 
 def f(n):

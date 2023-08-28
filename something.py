@@ -1,10 +1,11 @@
-
+import time
+from datetime import datetime
+import pytz
 
 class DataUtility():
     
     def __init__(
             self,
-            t,
             file="holidays"):
         self.months = [i for i in range(12)]
         self.days = [31,28,31,
@@ -15,25 +16,55 @@ class DataUtility():
                      30,31,30,
                      31,31,30,
                      31,30,31]
-        self.Time_zone = t
-        self.holidays = []
-        f = open(file+".dat",'r')
-        l = f.readline()
-        while l != '':
-            self.holidays.append(l.split(",")[1])
+        try:
+            self.holidays = []
+            f = open("C:/Users/Admin/OneDrive/Desktop/holidays.dat",'r+')
             l = f.readline()
+            while l != '':
+                self.holidays.append(l.split(",")[1])
+                l = f.readline()
+        except:
+            print("No file names \"holidays\" found in the directory: ")
 
+    def convert_timezone(self,from_timezone, to_timezone, datetime_str):
+        """
+        Converts date time between timezones
 
-    def convert_dt():
-        None
+        :param from_timezone: The timezone of the input values.
+        :type from_timezone: string("UTC" for example)
+        :param to_timezone: The timezone to which the dates needs to be converted to
+        :type to_timezone: string("Eastern" for example)
+        :param datetime_str: Date and time that need to be converted
+        :type datetime_str: string(YYYY-MM-DD HH:MM:SS)
+        """
+        try:
+            dt = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
+            
+            src_timezone = pytz.timezone(from_timezone)
+            dt_src = src_timezone.localize(dt)
+            
+            target_timezone = pytz.timezone(to_timezone)
+            dt_target = dt_src.astimezone(target_timezone)
+            
+            return dt_target.strftime('%Y-%m-%d %H:%M:%S %Z%z')
+        except Exception as e:
+            return f"Error: {e}"
+
 
     def add_dt(self,
                Fdate:str,
                num:int
                )->dict:
-        year = int(Fdate[:4])
-        month = int(Fdate[4:6])
-        date = int(Fdate[6:])
+        """
+        Adds the given number of days to the given date, and returns the end date
+
+        :param Fdate : Initial date
+        :type Fdate: string(YYYYMMDD)
+        :param num: Number of days to be added.
+        :type num: integer
+        """
+        year,month,date = map(int,(Fdate[:4],Fdate[4:6],Fdate[6:]))
+
         while True:
             day_info = self.days
             if year%4 == 0:
@@ -57,9 +88,16 @@ class DataUtility():
                Fdate:str,
                num:int
                )->dict:
-        year = int(Fdate[:4])
-        month = int(Fdate[4:6])
-        date = int(Fdate[6:])
+        """ 
+        Subtracts the given number of days from the given date
+
+        :param Fdate: Initial date
+        :type  Fdate: string(YYYYMMDD)
+        :param num: Number of days to be added
+        :type num : integer
+        """
+        year,month,date = map(int,(Fdate[:4],Fdate[4:6],Fdate[6:]))
+
         while True:
             day_info = self.days
             if year%4 == 0:
@@ -84,16 +122,21 @@ class DataUtility():
                  Fdate,
                  Tdate
                  )->int:
-        start_year = int(Fdate[:4])
-        start_month = int(Fdate[4:6])
-        start_date = int(Fdate[6:])
-        end_year = int(Tdate[:4])
-        end_month = int(Tdate[4:6])
-        end_date = int(Tdate[6:])
+        """
+        Returns the number of days between two dates 
+
+        :param Fdate: Initial date
+        :type Fdate : string(YYYYMMDD) 
+        :param Tdate: Ending Date
+        :type Tdate: string(YYYYMMDD)
+        """
+        start_year,start_month,start_date = map(int,(Fdate[:4],Fdate[4:6],Fdate[6:]))
+        end_year,end_month,end_date = map(int,(Tdate[:4],Tdate[4:6],Tdate[6:]))
+
         days = 0
         days+=end_date
         end_month -=1
-
+        print("Getdays")
         while end_year!=start_year:
             day_info = self.days
             if end_year%4 == 0:
@@ -103,6 +146,7 @@ class DataUtility():
                 days+=day_info[i]
             # print(end_year,days)
             end_year-=1
+
             # print(end_year)
             end_month = 12
 
@@ -116,39 +160,81 @@ class DataUtility():
         while end_date != start_date:
             days+=1
             # print(end_date)
-
             end_date-=1
         return days
 
-    def get_days_ExcludingWeekends(self,
+    def get_days_Excluding_Weekends(self,
                               Fdate:str,
                               Tdate:str,
                               first_weekend:int
                               )->int:
-        start_year = int(Fdate[:4])
-        start_month = int(Fdate[4:6])
-        start_date = int(Fdate[6:])
-        end_year = int(Tdate[:4])
-        end_month = int(Tdate[4:6])
-        end_date = int(Tdate[6:])
+        """
+        Return number of days between two dates excluding weekends(saturday and sunday)
+        :param Fdate: Initial date
+        :type Fdate: string(YYYYMMDD)
+        :param Tdate: Ending date
+        :type Tdate:  string(YYYYMMDD)
+        :param first_weekend: first occurance of a sunday from the Initial date(helps to calculate the number of weekends
+                                accurately(By default it's 0))
+        :type first_weekend: Integer.
+        """
+
+        start_year,start_month,start_date = map(int,(Fdate[:4],Fdate[4:6],Fdate[6:]))
+        end_year,end_month,end_date = map(int,(Tdate[:4],Tdate[4:6],Tdate[6:]))
 
         total_days = self.get_days(Fdate,Tdate)
         print(total_days)
-        NumberOf_weekend_days  = ((total_days-first_weekend)//7)*2
+        NumberOf_weekend_days  = int(round((total_days-first_weekend)/7,0)*2)
+        print((total_days-first_weekend)%7)
         return (total_days - NumberOf_weekend_days)
     
-    #a bit of altertion is required.
-
     
     def get_business_days(self,
                           Fdate:str,
-                          Tdata:str
+                          Tdate:str
                           )->int:
-        
+        days_exluding_weekends = self.get_days_Excluding_Weekends(Fdate,Tdate,2)
+        """
+        Returns number of business days between two dates(exluding weekends)
+        param Fdate: Initial date
+        :type Fdate: string(YYYYMMDD)
+        :param Tdate: Ending date
+        :type Tdate:  string(YYYYMMDD)
+        """
+        start_year,start_month,start_date = map(int,(Fdate[:4],Fdate[4:6],Fdate[6:]))
+        end_year,end_month,end_date = map(int,(Tdate[:4],Tdate[4:6],Tdate[6:]))
 
+        filtered_holidays  =[]
+        for i in self.holidays:
+            i = i.lstrip(" ").rstrip(" ")
+            yy = int(i[:4])
+            mm = int(i[4:6])
+            dd = int(i[6:])
+            if yy <= end_year and yy >= start_year:
+                if yy!=end_year and yy!= start_year:
+                    filtered_holidays.append(i)
+                else:
+                    if mm!= start_month and mm!=end_month:
+                        filtered_holidays.append(i)
+                    else:
+                        if mm == start_month and dd >= start_date or mm == end_month and dd<=end_date:
+                            filtered_holidays.append(i)
+        return days_exluding_weekends - len(filtered_holidays)
+
+    def get_date_since_epoch(self,
+                             Fdate):
+        """
+        Returns number of days elapsed from the start of standard unix time to the given date.
+        :param Fdate: Initial date(YYYY-MM-DD) and time (HH:MM:SS)
+        :type Fdate: string
+        """
+        epoch_date = "19700101"
+        date = d.convert_timezone("US/Eastern","UTC",Fdate).split(" ")[0].split("-")
+        date1 = ""
+        for i in date:
+            date1 += i 
+        print(date)
+        return self.get_days(epoch_date,date1)
 
 if __name__ == '__main__':
-    d = DataUtility(13.50)
-
-    print(d.get_business_days("20030515","20230827"))
-
+    d = DataUtility()
